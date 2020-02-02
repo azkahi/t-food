@@ -1,0 +1,39 @@
+const tintColor = '#2f95dc';
+
+export default {
+    WHITE: '#fff',
+    WHITE_TRANSPARENT: 'rgba(255, 255, 255, 0.95)',
+    WHITE_TRANSCLUENT: 'rgba(255, 255, 255, 0.425)',
+    BLACK: '#212121',
+    BLACK_TWO: '#303030',
+    BLACK_THREE: '#434343',
+    BLACK_FOUR: '#242424',
+    BLACK_DEFAULT: '#000000',
+    BLACK_TRANSPARENT: 'rgba(0, 0, 0, 0.95)',
+    BLACK_TRANSCLUENT: 'rgba(0, 0, 0, 0.425)',
+    RED: '#dc1f1b',
+    GREY: '#a5a5a5',
+    GREEN: '#009900',
+    GREEN_OTP_BOX: '#27AE60',
+    GREY_LIGHT: '#e6e7e9',
+    GREY_VERY_LIGHT: '#f2f2f2',
+    GREY_DARK: '#434343',
+    PRIMARY_BLUE: '#0984E3',
+    TRANSPARENT: 'transparent',
+    // PRIMARY
+    PRIMARY_RED: '#E30613',
+    PRIMARY_GREEN: '#00B894',
+    PRIMARY_BLUE: '#0984E3',
+    // COLOR TASK TYPE
+    TASK_OWN: '#74B9FF',
+    TASK_APPROVAL: '#55EFC4',
+    TASK_REMEDY: '#FFEAA7',
+    TASK_REMEDY_APPROV: '#FF7675',
+    TASK_MEETING: '#E84393',
+    // BG MENU
+    BG_MENU_RED: '#E4322F',
+    BG_MENU_BLUE: '#6C5CE7',
+    BG_MENU_GREEN: '#00B894',
+    BG_MENU_ORANGE: '#E17055',
+    BG_MENU_YELLOW: '#EDB347'
+}
