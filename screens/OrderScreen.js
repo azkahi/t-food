@@ -31,67 +31,27 @@ const logoAndalan = require('../assets/images/andalan.jpg');
 const logoRotupang = require('../assets/images/rotupang.jpg');
 const logoWilasa = require('../assets/images/wilasa.png');
 
-const stallFood = {
-  'Andalan Coffee': [
-    'Hot Lemon Tea',
-    'Hot Ginger Tea',
-    'Ice Thai Tea',
-    'Hot Espresso',
-    'Ice Coffe Milk',
-  ],
-  'Rotupang': [
-    'Coklat',
-    'Strawberry',
-    'Kacang',
-    'Telor Sosis',
-    'Telor Kornet',
-  ],
-  'Wilasa': [
-    'Hot Lemon Tea',
-    'The Susu Jahe Hangat',
-    'Es Teh Leci',
-    'Kopi Hitam',
-    'Kopi Susu',
-  ]
-};
-
-export default class HomeScreen extends React.Component {
+export default class OrderScreen extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      food: '',
-      stall: 'Andalan Coffee',
-      loading: false
+      loading: true,
+      orders: []
     }
   }
 
-  async createOrderRequest(stall, food) {
-    console.log('Posting Data');
-
-    const name = await AsyncStorage.getItem('name');
-    const phone_number = await AsyncStorage.getItem('phone');
-
-    const order = {
-      name: name,
-      phone_number: phone_number,
-      food: food,
-      stall: stall
-    }
-
-    console.log({ order });
+  async getOrders() {
+    console.log('Getting Data');
 
     try {
       await axios({
-        method: 'post',
+        method: 'get',
         url: 'https://sleepy-sierra-09311.herokuapp.com/orders',
-        data: {
-          order
-        }
       })
       .then(async (response) => {
         console.log(response.data);
-        this.setState({ loading: false });
+        this.setState({ orders: response.data, loading: false });
       })
       .catch((error) => {
         this.setState({ loading: false });
@@ -117,37 +77,8 @@ export default class HomeScreen extends React.Component {
     }
   }
 
-  saveFood(stall, food) {
-    this.setState({ loading: true });
-
-    this.createOrderRequest(stall, food);
-
-    Alert.alert(
-      `Your order of ${food} from ${stall} will be ordered soon.`,
-      '',
-      [
-        { text: 'OK' },
-      ],
-      { cancelable: true }
-    );
-  }
-
-  processInput() {
-    const { stall, food } = this.state;
-
-    if (!food) {
-      Alert.alert(
-        'You must specify a food.',
-        '',
-        [
-          { text: 'OK' },
-        ],
-        { cancelable: true }
-      );
-    } else {
-      this.setState({ loading: true });
-      this.saveFood(stall, food);
-    }
+  componentDidMount() {
+    getOrders();
   }
 
   renderLogoStall() {
@@ -171,16 +102,15 @@ export default class HomeScreen extends React.Component {
 
   render() {
     const { navigation, loading } = this.props;
-    const widthLogo = 200;
+    const widthLogo = 50;
 
-    console.log( stallFood[this.state.stall] );
-
+    if (loading) {
+      return (<Loading />);
+    } else {
       return (
         <Block flex>
-          { loading ? <Loading /> : null }
           <Text style={[styles.title, styles.titleText]}>Order A Food</Text>
           <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall()} />
-          <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
             <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Stall:</Text>
             <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center' }}>
             <Picker
@@ -215,11 +145,12 @@ export default class HomeScreen extends React.Component {
             </Button>
           </KeyboardAvoidingView>
         </Block>
-    );
+      );
+    }
   }
 }
 
-HomeScreen.navigationOptions = {
+OrderScreen.navigationOptions = {
   header: null,
 };
 
@@ -233,8 +164,7 @@ const styles = StyleSheet.create({
     height: theme.SIZES.BASE * 3,
     shadowRadius: 5,
     shadowOpacity: 0,
-    marginTop: 10,
-    marginBottom: 20
+    marginVertical: 10
   },
   buttonText: {
     color: 'white',

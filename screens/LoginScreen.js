@@ -29,22 +29,24 @@ export default class LoginScreen extends React.Component {
 
     this.state = {
       phone: '',
+      name: ''
     }
   }
 
-  async savePhoneNumber(phone) {
+  async savePhoneName(phone, name) {
     await AsyncStorage.setItem('phone', phone);
+    await AsyncStorage.setItem('name', name);
     this.setState({ loading: false });
     this.props.navigation.navigate('Home');
   }
 
   processInput() {
-    const { phone } = this.state;
+    const { phone, name } = this.state;
 
-    if (!phone) {
+    if ((!phone) || (!name)) {
       console.log(phone);
       Alert.alert(
-        'You must provide a phone number.',
+        'You must provide a phone number and a name.',
         '',
         [
           { text: 'OK' },
@@ -53,27 +55,40 @@ export default class LoginScreen extends React.Component {
       );
     } else {
       this.setState({ loading: true });
-      this.savePhoneNumber(phone);
+      this.savePhoneName(phone, name);
     }
   }
 
   render() {
     const { navigation } = this.props;
+    const widthLogo = 250;
 
       return (
         <Block flex>
-          <Text style={[styles.title, styles.titleText]}>T - Food</Text>
           <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Phone number:</Text>
-            <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white' }}>
-              <TextInput
-                style={{ height: 50, borderBottomWidth: 1, paddingHorizontal: 10 }}
-                onChangeText={text => this.setState({ phone: text })}
-                value={this.state.phone}
-                keyboardType='phone-pad'
-                textAlign={'center'}
-                autoCompleteType='off'
-              />
+            <Image style={[styles.title, {width: widthLogo, height: widthLogo * 461 / 377}]} source={require("../assets/images/logo.png")} />
+            <View style={styles.phoneNumberContainer}>
+              <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Name:</Text>
+              <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white' }}>
+                <TextInput
+                  style={{ height: 50, borderBottomWidth: 1, paddingHorizontal: 10 }}
+                  onChangeText={text => this.setState({ name: text })}
+                  value={this.state.name}
+                  textAlign={'center'}
+                  autoCompleteType='off'
+                />
+              </View>
+              <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Phone number:</Text>
+              <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white' }}>
+                <TextInput
+                  style={{ height: 50, borderBottomWidth: 1, paddingHorizontal: 10, marginBottom: 20 }}
+                  onChangeText={text => this.setState({ phone: text })}
+                  value={this.state.phone}
+                  keyboardType='phone-pad'
+                  textAlign={'center'}
+                  autoCompleteType='off'
+                />
+              </View>
             </View>
 
             <Button
@@ -105,8 +120,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16
   },
+  phoneNumberContainer: {
+    marginTop: 20
+  },
   title: {
-    marginTop:'15%'
+    marginTop:'15%',
+    alignSelf: 'center'
   },
   subtitle: {
     marginTop: 20

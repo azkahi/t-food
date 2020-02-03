@@ -1,9 +1,5 @@
 export default [
-  {
-    name: 'Exmud',
-    food: [
-      'Bakso kecil',
-      'Bakso besar'
-    ]
-  }
+  'Andalan Coffee',
+  'Rotupang',
+  'Wilasa'
 ];

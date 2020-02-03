@@ -14,7 +14,7 @@ export default function Loading() {
     <Block flex style={styles.container}>
       <StatusBar hidden />
       <Block center>
-        <ActivityIndicator size="large" color={Colors.secondaryColor} />
+        <ActivityIndicator size="large" color={Colors.PRIMARY_RED} />
       </Block>
     </Block>
   );
