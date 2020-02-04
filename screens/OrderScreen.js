@@ -171,7 +171,7 @@ export default class OrderScreen extends React.Component {
       );
     } else {
       return (
-        <Block flex style={{marginTop: 30}}>
+        <Block flex style={{marginTop: '10%'}}>
           <FlatList
             data={orders}
             renderItem={({ item }) => this.renderItem(item)}

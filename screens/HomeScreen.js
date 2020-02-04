@@ -183,7 +183,7 @@ export default class HomeScreen extends React.Component {
     } else {
       return (
         <Block flex>
-          <Text style={[styles.title, styles.titleText]}>Order A Food</Text>
+          <Text style={[styles.title, styles.titleText]}>Cheers you app!</Text>
           <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall()} />
           <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
             <Text style={[styles.titleText, {fontSize: 20, marginTop: 40}]}>Stall:</Text>
@@ -247,7 +247,8 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   title: {
-    marginTop:'15%'
+    marginTop:'10%',
+    marginBottom: 10
   },
   subtitle: {
     marginTop: 20
