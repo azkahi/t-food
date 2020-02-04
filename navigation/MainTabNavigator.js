@@ -10,6 +10,7 @@ import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import OrderScreen from '../screens/OrderScreen';
 
 const config = Platform.select({
   web: { headerMode: 'screen' },
@@ -71,8 +72,25 @@ SettingsStack.navigationOptions = {
 
 SettingsStack.path = '';
 
+const OrdersStack = createStackNavigator(
+  {
+    Orders: OrderScreen,
+  },
+  config
+);
+
+OrdersStack.navigationOptions = {
+  tabBarLabel: 'Orders',
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-clipboard' : 'md-clipboard'} />
+  ),
+};
+
+OrdersStack.path = '';
+
 const tabNavigator = createBottomTabNavigator({
   HomeStack,
+  OrdersStack,
   MapStack,
   SettingsStack,
 },

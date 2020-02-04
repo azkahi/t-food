@@ -13,7 +13,10 @@ import {
   TextInput,
   AsyncStorage,
   Alert,
-  Picker
+  Picker,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl
 } from "react-native";
 import * as Font from 'expo-font';
 import { Block, Button, theme } from "galio-framework";
@@ -37,24 +40,55 @@ export default class OrderScreen extends React.Component {
 
     this.state = {
       loading: true,
-      orders: []
+      refreshing: false,
+      orders: [
+          {
+            "id": 1,
+            "name": "Azka",
+            "phone_number": "08111",
+            "food": "Teh Manis",
+            "stall": "Wilasa",
+            "created_at": "2020-02-03T03:49:59.041Z",
+            "updated_at": "2020-02-03T03:49:59.041Z"
+          },
+          {
+            "id": 2,
+            "name": "Azka",
+            "phone_number": "08111",
+            "food": "Strawberry",
+            "stall": "Rotupang",
+            "created_at": "2020-02-03T03:49:59.041Z",
+            "updated_at": "2020-02-03T03:49:59.041Z"
+          },
+          {
+            "id": 3,
+            "name": "Azka",
+            "phone_number": "08111",
+            "food": "Hot Lemon Tea",
+            "stall": "Andalan Coffee",
+            "created_at": "2020-02-03T03:49:59.041Z",
+            "updated_at": "2020-02-03T03:49:59.041Z"
+          }
+      ]
     }
   }
 
-  async getOrders() {
+  getOrders() {
     console.log('Getting Data');
 
     try {
-      await axios({
+      axios({
         method: 'get',
         url: 'https://sleepy-sierra-09311.herokuapp.com/orders',
+        timeout: 10000,
       })
       .then(async (response) => {
         console.log(response.data);
-        this.setState({ orders: response.data, loading: false });
+        this.setState({ orders: response.data, loading: false, refreshing: false });
       })
       .catch((error) => {
-        this.setState({ loading: false });
+        console.log('Error 1');
+        this.setState({ loading: false, refreshing: false });
         Alert.alert(
           'ERROR',
           error.toString(),
@@ -65,6 +99,7 @@ export default class OrderScreen extends React.Component {
         );
       })
     } catch (error) {
+      console.log('Error 2');
       this.setState({ loading: false, refreshing: false });
       Alert.alert(
         'ERROR',
@@ -78,12 +113,14 @@ export default class OrderScreen extends React.Component {
   }
 
   componentDidMount() {
-    getOrders();
+    this.getOrders();
+    this.interval = setInterval(() => {
+      this.setState({ refreshing: true });
+      this.getOrders();
+    }, 30000);
   }
 
-  renderLogoStall() {
-    const { stall } = this.state;
-
+  renderLogoStall(stall) {
     switch (stall) {
       case 'Andalan Coffee':
         return(logoAndalan);
@@ -100,50 +137,49 @@ export default class OrderScreen extends React.Component {
     }
   }
 
+  renderItem(item) {
+    const widthLogo = 100;
+    console.log({item});
+    return (
+      <View style={styles.orderContainer}>
+        <View style={styles.stallContainer}>
+          <Text style={[styles.detailText, {fontSize: 16, marginVertical: 0, textAlign: 'center'}]}>{item.stall}</Text>
+          <Image style={{margin: 5, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall(item.stall)} />
+        </View>
+        <View style={styles.orderDetail}>
+          <Text style={styles.detailText}>Food: {item.food}</Text>
+          <Text style={styles.detailText}>Name: {item.name}</Text>
+          <Text style={styles.detailText}>Phone: {item.phone_number}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.getOrders();
+  }
+
   render() {
-    const { navigation, loading } = this.props;
+    const { navigation } = this.props;
+    const { loading, refreshing, orders } = this.state;
     const widthLogo = 50;
 
     if (loading) {
-      return (<Loading />);
+      return (
+        <Loading />
+      );
     } else {
       return (
-        <Block flex>
-          <Text style={[styles.title, styles.titleText]}>Order A Food</Text>
-          <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall()} />
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Stall:</Text>
-            <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center' }}>
-            <Picker
-              selectedValue={this.state.stall}
-              style={{height: 50, width: '100%'}}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({stall: itemValue, food: ''})
-              }>
-              { Food.map((stall) => <Picker.Item label={stall} value={stall} />) }
-            </Picker>
-            </View>
-
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Food:</Text>
-            <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center'  }}>
-            <Picker
-              selectedValue={this.state.food}
-              style={{height: 50, width: '100%'}}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({food: itemValue})
-              }>
-              <Picker.Item label='' value='' />
-              { this.state.stall ? stallFood[this.state.stall].map((food) => <Picker.Item label={food} value={food} /> ) : null }
-            </Picker>
-            </View>
-
-            <Button
-              style={styles.button}
-              onPress={() => this.processInput()}
-              textStyle={styles.buttonText}
-            >
-              Order
-            </Button>
-          </KeyboardAvoidingView>
+        <Block flex style={{marginTop: 30}}>
+          <FlatList
+            data={orders}
+            renderItem={({ item }) => this.renderItem(item)}
+            keyExtractor={item => item.id}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={this.onRefresh} />
+            }
+          />
         </Block>
       );
     }
@@ -190,4 +226,29 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
   },
+  orderContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    marginHorizontal: 10,
+    marginVertical: 5,
+    borderWidth: 0.5,
+    borderRadius: 20
+  },
+  orderDetail: {
+    flex: 1,
+    marginHorizontal: 30,
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  stallContainer: {
+    marginLeft: 15,
+    marginVertical: 10,
+    flexDirection: 'column',
+  },
+  detailText: {
+    fontSize: 12,
+    color: 'black',
+    textAlign: 'left',
+    marginVertical: 5
+  }
 });

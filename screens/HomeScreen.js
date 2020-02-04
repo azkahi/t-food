@@ -170,18 +170,23 @@ export default class HomeScreen extends React.Component {
   }
 
   render() {
-    const { navigation, loading } = this.props;
+    const { navigation } = this.props;
+    const { loading } = this.state;
     const widthLogo = 200;
 
     console.log( stallFood[this.state.stall] );
 
+    if (loading) {
+      return (
+        <Loading />
+      );
+    } else {
       return (
         <Block flex>
-          { loading ? <Loading /> : null }
           <Text style={[styles.title, styles.titleText]}>Order A Food</Text>
           <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall()} />
           <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Stall:</Text>
+            <Text style={[styles.titleText, {fontSize: 20, marginTop: 40}]}>Stall:</Text>
             <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center' }}>
             <Picker
               selectedValue={this.state.stall}
@@ -215,7 +220,8 @@ export default class HomeScreen extends React.Component {
             </Button>
           </KeyboardAvoidingView>
         </Block>
-    );
+      );
+    }
   }
 }
 
