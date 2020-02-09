@@ -41,41 +41,14 @@ export default class OrderScreen extends React.Component {
     this.state = {
       loading: true,
       refreshing: false,
-      orders: [
-          {
-            "id": 1,
-            "name": "Azka",
-            "phone_number": "08111",
-            "food": "Teh Manis",
-            "stall": "Wilasa",
-            "created_at": "2020-02-03T03:49:59.041Z",
-            "updated_at": "2020-02-03T03:49:59.041Z"
-          },
-          {
-            "id": 2,
-            "name": "Azka",
-            "phone_number": "08111",
-            "food": "Strawberry",
-            "stall": "Rotupang",
-            "created_at": "2020-02-03T03:49:59.041Z",
-            "updated_at": "2020-02-03T03:49:59.041Z"
-          },
-          {
-            "id": 3,
-            "name": "Azka",
-            "phone_number": "08111",
-            "food": "Hot Lemon Tea",
-            "stall": "Andalan Coffee",
-            "created_at": "2020-02-03T03:49:59.041Z",
-            "updated_at": "2020-02-03T03:49:59.041Z"
-          }
-      ]
+      stall: 'All',
+      loadingRequest: false,
+      initOrders: [],
+      orders: []
     }
   }
 
   getOrders() {
-    console.log('Getting Data');
-
     try {
       axios({
         method: 'get',
@@ -83,11 +56,10 @@ export default class OrderScreen extends React.Component {
         timeout: 10000,
       })
       .then(async (response) => {
-        console.log(response.data);
-        this.setState({ orders: response.data, loading: false, refreshing: false });
+        this.setState({ initOrders: response.data, loading: false, refreshing: false, loadingRequest: false });
+        this.filterOrders(this.state.stall);
       })
       .catch((error) => {
-        console.log('Error 1');
         this.setState({ loading: false, refreshing: false });
         Alert.alert(
           'ERROR',
@@ -99,7 +71,6 @@ export default class OrderScreen extends React.Component {
         );
       })
     } catch (error) {
-      console.log('Error 2');
       this.setState({ loading: false, refreshing: false });
       Alert.alert(
         'ERROR',
@@ -112,12 +83,81 @@ export default class OrderScreen extends React.Component {
     }
   }
 
+  async changeStatusRequest(orderItem, orderStatus) {
+    this.setState({ loadingRequest: true });
+
+    const order = {
+      status: orderStatus
+    }
+
+    try {
+      await axios({
+        method: 'put',
+        url: `https://sleepy-sierra-09311.herokuapp.com/orders/${orderItem.id}`,
+        data: {
+          order
+        }
+      })
+      .then(async (response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        this.setState({ loadingRequest: false });
+        console.log(error);
+        Alert.alert(
+          'ERROR',
+          error.toString(),
+          [
+            { text: 'OK' },
+          ],
+          { cancelable: true }
+        );
+      })
+    } catch (error) {
+      this.setState({ loadingRequest: false });
+      console.log(error);
+      Alert.alert(
+        'ERROR',
+        error.toString(),
+        [
+          { text: 'OK' },
+        ],
+        { cancelable: true }
+      );
+    }
+
+    this.getOrders();
+  }
+
+  filterOrders(filter) {
+    const { initOrders } = this.state;
+
+    this.setState({ stall: filter });
+
+    if (filter != 'All') {
+      const resFilterOrders = initOrders.filter(item => filter == item.stall);
+      this.setState({ orders: resFilterOrders });
+    } else {
+      this.setState({ orders: initOrders });
+    }
+  }
+
+  displayDateTime(dateTime) {
+    const dateObj = new Date(dateTime);
+
+    return `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`;
+  }
+
   componentDidMount() {
     this.getOrders();
     this.interval = setInterval(() => {
-      this.setState({ refreshing: true });
       this.getOrders();
-    }, 30000);
+    }, 10000);
+  }
+
+  onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.getOrders();
   }
 
   renderLogoStall(stall) {
@@ -139,30 +179,42 @@ export default class OrderScreen extends React.Component {
 
   renderItem(item) {
     const widthLogo = 100;
-    console.log({item});
+
     return (
-      <View style={styles.orderContainer}>
-        <View style={styles.stallContainer}>
-          <Text style={[styles.detailText, {fontSize: 16, marginVertical: 0, textAlign: 'center'}]}>{item.stall}</Text>
-          <Image style={{margin: 5, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall(item.stall)} />
+      <View style={styles.orderBoxedContainer}>
+        <View style={styles.orderContainer}>
+          <View style={styles.stallContainer}>
+            <Text style={[styles.detailText, {fontSize: 16, marginVertical: 0, textAlign: 'center'}]}>{item.stall}</Text>
+            <Image style={{margin: 5, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall(item.stall)} />
+          </View>
+          <View style={styles.orderDetail}>
+            <Text style={styles.detailText}>Date Ordered: { this.displayDateTime(item.created_at) }</Text>
+            <Text style={styles.detailText}>Food: {item.food}</Text>
+            <Text style={styles.detailText}>Name: {item.name}</Text>
+            <Text style={styles.detailText}>Phone: {item.phone_number}</Text>
+          </View>
         </View>
-        <View style={styles.orderDetail}>
-          <Text style={styles.detailText}>Food: {item.food}</Text>
-          <Text style={styles.detailText}>Name: {item.name}</Text>
-          <Text style={styles.detailText}>Phone: {item.phone_number}</Text>
+        <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10}}>
+          <Text style={[styles.detailText, {alignSelf: 'center'}]}>Status:</Text>
+          <View style={{marginLeft: 10, alignSelf:'center', borderWidth: 0.5, width: '80%', paddingVertical: 0, marginBottom: 10}}>
+            <Picker
+              selectedValue={item.status}
+              style={[styles.pickerFilter]}
+              onValueChange={((itemValue) => this.changeStatusRequest(item, itemValue))}
+            >
+              <Picker.Item key="Not Processed" label="Not Processed" value="Not Processed" />
+              <Picker.Item key="Order Processed" label="Order Processed" value="Order Processed" />
+              <Picker.Item key="Order Completed" label="Order Completed" value="Order Completed" />
+            </Picker>
+          </View>
         </View>
       </View>
     );
   }
 
-  onRefresh = () => {
-    this.setState({ refreshing: true });
-    this.getOrders();
-  }
-
   render() {
     const { navigation } = this.props;
-    const { loading, refreshing, orders } = this.state;
+    const { loading, refreshing, orders, loadingRequest } = this.state;
     const widthLogo = 50;
 
     if (loading) {
@@ -172,10 +224,24 @@ export default class OrderScreen extends React.Component {
     } else {
       return (
         <Block flex style={{marginTop: '10%'}}>
+          <Text style={styles.filterText}>Choose stall:</Text>
+          <View style={{alignSelf:'center', borderWidth: 0.5, width: '50%', paddingVertical: 0, marginVertical: 10}}>
+            <Picker
+              selectedValue={this.state.stall}
+              style={styles.pickerFilter}
+              onValueChange={((itemValue) => this.filterOrders(itemValue))}
+            >
+              <Picker.Item key="All" label="All" value="All" />
+              { Food.map((stall) => <Picker.Item key={stall} label={stall} value={stall}/>) }
+            </Picker>
+          </View>
+
+          { loadingRequest ? <Loading /> : null }
+
           <FlatList
             data={orders}
             renderItem={({ item }) => this.renderItem(item)}
-            keyExtractor={item => item.id}
+            keyExtractor={item => `${item.id}`}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={this.onRefresh} />
             }
@@ -227,8 +293,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   orderContainer: {
-    flex: 1,
     flexDirection: 'row',
+  },
+  orderBoxedContainer: {
+    flex: 1,
     marginHorizontal: 10,
     marginVertical: 5,
     borderWidth: 0.5,
@@ -244,11 +312,23 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     marginVertical: 10,
     flexDirection: 'column',
+    justifyContent: 'center'
   },
   detailText: {
     fontSize: 12,
     color: 'black',
     textAlign: 'left',
     marginVertical: 5
+  },
+  filterText: {
+    textAlign: 'center',
+    fontSize: 18
+  },
+  pickerFilter: {
+    alignSelf: 'center',
+    width: '100%',
+    height: 50,
+    paddingHorizontal: 5,
+    borderWidth: 5
   }
 });
