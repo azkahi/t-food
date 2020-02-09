@@ -13,7 +13,8 @@ import {
   TextInput,
   AsyncStorage,
   Alert,
-  Picker
+  Picker,
+  FlatList
 } from "react-native";
 import * as Font from 'expo-font';
 import { Block, Button, theme } from "galio-framework";
@@ -33,25 +34,25 @@ const logoWilasa = require('../assets/images/wilasa.png');
 
 const stallFood = {
   'Andalan Coffee': [
-    'Hot Lemon Tea',
-    'Hot Ginger Tea',
-    'Ice Thai Tea',
-    'Hot Espresso',
-    'Ice Coffe Milk',
+    { name: 'Hot Lemon Tea', price: 'Rp 10.000'},
+    { name: 'Hot Ginger Tea', price: 'Rp 10.000'},
+    { name: 'Ice Thai Tea', price: 'Rp 15.000'},
+    { name: 'Hot Espresso', price: 'Rp 10.000'},
+    { name: 'Ice Coffe Milk', price: 'Rp 17.000'},
   ],
   'Rotupang': [
-    'Coklat',
-    'Strawberry',
-    'Kacang',
-    'Telor Sosis',
-    'Telor Kornet',
+    { name: 'Coklat', price: 'Rp 15.000'},
+    { name: 'Strawberry', price: 'Rp 15.000'},
+    { name: 'Kacang', price: 'Rp 15.000'},
+    { name: 'Telor Sosis', price: 'Rp 20.000'},
+    { name: 'Telor Kornet', price: 'Rp 20.000'},
   ],
   'Wilasa': [
-    'Hot Lemon Tea',
-    'The Susu Jahe Hangat',
-    'Es Teh Leci',
-    'Kopi Hitam',
-    'Kopi Susu',
+    { name: 'Hot Lemon Tea', price: 'Rp 12.000'},
+    { name: 'Teh Susu Jahe Hangat', price: 'Rp 15.000'},
+    { name: 'Es Teh Leci', price: 'Rp 20.000'},
+    { name: 'Kopi Hitam', price: 'Rp 10.000'},
+    { name: 'Kopi Susu', price: 'Rp 12.500'},
   ]
 };
 
@@ -67,6 +68,8 @@ export default class HomeScreen extends React.Component {
   }
 
   async createOrderRequest(stall, food) {
+    this.setState({ loading: true });
+
     console.log('Posting Data');
 
     const name = await AsyncStorage.getItem('name');
@@ -76,7 +79,8 @@ export default class HomeScreen extends React.Component {
       name: name,
       phone_number: phone_number,
       food: food,
-      stall: stall
+      stall: stall,
+      status: "Not Processed"
     }
 
     console.log({ order });
@@ -92,6 +96,15 @@ export default class HomeScreen extends React.Component {
       .then(async (response) => {
         console.log(response.data);
         this.setState({ loading: false });
+
+        Alert.alert(
+          `Your order of ${food} from ${stall} will be ordered soon.`,
+          '',
+          [
+            { text: 'OK' },
+          ],
+          { cancelable: true }
+        );
       })
       .catch((error) => {
         this.setState({ loading: false });
@@ -117,42 +130,26 @@ export default class HomeScreen extends React.Component {
     }
   }
 
-  saveFood(stall, food) {
-    this.setState({ loading: true });
-
-    this.createOrderRequest(stall, food);
-
+  processInput(stall, food) {
     Alert.alert(
-      `Your order of ${food} from ${stall} will be ordered soon.`,
-      '',
+      'Are you sure you want to buy this item?',
+      `Ordering ${food} from ${stall}`,
       [
-        { text: 'OK' },
+        {
+          text: 'No',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: () => this.createOrderRequest(stall, food),
+        },
       ],
       { cancelable: true }
     );
   }
 
-  processInput() {
-    const { stall, food } = this.state;
-
-    if (!food) {
-      Alert.alert(
-        'You must specify a food.',
-        '',
-        [
-          { text: 'OK' },
-        ],
-        { cancelable: true }
-      );
-    } else {
-      this.setState({ loading: true });
-      this.saveFood(stall, food);
-    }
-  }
-
-  renderLogoStall() {
-    const { stall } = this.state;
-
+  renderLogoStall(stall) {
     switch (stall) {
       case 'Andalan Coffee':
         return(logoAndalan);
@@ -169,10 +166,39 @@ export default class HomeScreen extends React.Component {
     }
   }
 
+  renderStalls(item) {
+    const foods = stallFood[item];
+    const widthLogo = 200;
+
+    console.log({ foods });
+
+    return(
+      <View style={styles.boxedContainer}>
+        <Text style={[styles.titleText]}>{item}</Text>
+        <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall(item)} />
+
+        <Text style={[styles.titleText, {fontSize: 20}]}>Menu:</Text>
+        <View style={styles.orderContainer}>
+          {
+            foods.map((food) => (
+              <Button
+                key={`${item}-${food.name}`}
+                style={styles.button}
+                onPress={() => this.processInput(item, food.name)}
+                textStyle={styles.buttonText}
+              >
+                <Text style={styles.orderText}>{food.name} - {food.price}</Text>
+              </Button>
+            ))
+          }
+        </View>
+      </View>
+    );
+  }
+
   render() {
     const { navigation } = this.props;
     const { loading } = this.state;
-    const widthLogo = 200;
 
     console.log( stallFood[this.state.stall] );
 
@@ -184,41 +210,11 @@ export default class HomeScreen extends React.Component {
       return (
         <Block flex>
           <Text style={[styles.title, styles.titleText]}>Cheers you app!</Text>
-          <Image style={{marginVertical: 20, alignSelf: 'center', width: widthLogo, height: widthLogo}} source={this.renderLogoStall()} />
-          <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 40}]}>Stall:</Text>
-            <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center' }}>
-            <Picker
-              selectedValue={this.state.stall}
-              style={{height: 50, width: '100%'}}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({stall: itemValue, food: ''})
-              }>
-              { Food.map((stall) => <Picker.Item label={stall} value={stall} />) }
-            </Picker>
-            </View>
-
-            <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Food:</Text>
-            <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white', alignItems: 'center'  }}>
-            <Picker
-              selectedValue={this.state.food}
-              style={{height: 50, width: '100%'}}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({food: itemValue})
-              }>
-              <Picker.Item label='' value='' />
-              { this.state.stall ? stallFood[this.state.stall].map((food) => <Picker.Item label={food} value={food} /> ) : null }
-            </Picker>
-            </View>
-
-            <Button
-              style={styles.button}
-              onPress={() => this.processInput()}
-              textStyle={styles.buttonText}
-            >
-              Order
-            </Button>
-          </KeyboardAvoidingView>
+          <FlatList
+            data={Food}
+            renderItem={({ item }) => this.renderStalls(item)}
+            keyExtractor={item => item}
+          />
         </Block>
       );
     }
@@ -244,6 +240,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+    alignSelf: 'center',
     fontSize: 16
   },
   title: {
@@ -267,4 +264,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
   },
+  boxedContainer: {
+    flex: 1,
+    borderWidth: 0.5,
+    borderRadius: 10,
+    margin: 10,
+    paddingVertical: 10
+  },
+  orderContainer: {
+    flex: 1,
+    alignItems: 'center'
+  },
+  orderText: {
+    color: 'white'
+  }
 });
