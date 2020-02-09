@@ -65,8 +65,8 @@ export default class LoginScreen extends React.Component {
 
       return (
         <Block flex>
+          <Image style={[styles.title, {width: widthLogo, height: widthLogo * 461 / 377}]} source={require("../assets/images/logo.png")} />
           <KeyboardAvoidingView behavior='padding' enabled style={{ justifyContent: 'flex-end', alignItems: 'center', flex: 1, marginHorizontal: 20, marginVertical: 5 }}>
-            <Image style={[styles.title, {width: widthLogo, height: widthLogo * 461 / 377}]} source={require("../assets/images/logo.png")} />
             <View style={styles.phoneNumberContainer}>
               <Text style={[styles.titleText, {fontSize: 20, marginTop: 20}]}>Name:</Text>
               <View style={{marginVertical: 10, width: width - 40, backgroundColor: 'white' }}>
@@ -98,6 +98,7 @@ export default class LoginScreen extends React.Component {
             >
               Login
             </Button>
+            <Text style={[styles.titleText, {color: 'black', fontSize: 20, marginVertical: 5}]}>New User? <Text style={{color: Colors.PRIMARY_RED}}>Sign Up</Text></Text>
           </KeyboardAvoidingView>
         </Block>
     );
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   title: {
-    marginTop:'15%',
+    marginTop:'10%',
     alignSelf: 'center'
   },
   subtitle: {
