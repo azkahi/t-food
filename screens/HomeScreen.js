@@ -51,8 +51,8 @@ const stallFood = {
     { name: 'Hot Lemon Tea', price: 'Rp 12.000'},
     { name: 'Teh Susu Jahe Hangat', price: 'Rp 15.000'},
     { name: 'Es Teh Leci', price: 'Rp 20.000'},
-    { name: 'Kopi Hitam', price: 'Rp 10.000'},
-    { name: 'Kopi Susu', price: 'Rp 12.500'},
+    { name: 'Hot Kopi Hitam', price: 'Rp 10.000'},
+    { name: 'Hot Kopi Susu', price: 'Rp 12.500'},
   ]
 };
 
